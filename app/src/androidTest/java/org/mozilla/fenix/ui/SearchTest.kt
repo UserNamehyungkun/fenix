@@ -5,12 +5,22 @@
 package org.mozilla.fenix.ui
 
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+import androidx.core.net.toUri
+import androidx.test.uiautomator.UiSelector
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
+import org.mozilla.fenix.helpers.FeatureSettingsHelper
 import org.mozilla.fenix.helpers.HomeActivityTestRule
+import org.mozilla.fenix.helpers.SearchDispatcher
 import org.mozilla.fenix.ui.robots.homeScreen
+import org.mozilla.fenix.ui.robots.mDevice
+import org.mozilla.fenix.ui.robots.navigationToolbar
+import org.mozilla.fenix.ui.robots.searchSettingsScreen
 
 /**
  *  Tests for verifying the search fragment
@@ -23,12 +33,28 @@ import org.mozilla.fenix.ui.robots.homeScreen
  */
 
 class SearchTest {
-    /* ktlint-disable no-blank-line-before-rbrace */ // This imposes unreadable grouping.
+    private val featureSettingsHelper = FeatureSettingsHelper()
+    private lateinit var mockWebServer: MockWebServer
+
     @get:Rule
     val activityTestRule = AndroidComposeTestRule(
         HomeActivityTestRule(),
         { it.activity }
     )
+
+    @Before
+    fun setUp() {
+        mockWebServer = MockWebServer().apply {
+            dispatcher = SearchDispatcher()
+            start()
+        }
+        featureSettingsHelper.setJumpBackCFREnabled(false)
+    }
+
+    @After
+    fun tearDown() {
+        featureSettingsHelper.resetAllFeatureFlags()
+    }
 
     @Test
     fun searchScreenItemsTest() {
@@ -96,6 +122,40 @@ class SearchTest {
             typeSearch("test")
             clickClearButton()
             verifySearchBarEmpty()
+        }
+    }
+
+    @SmokeTest
+    @Test
+    fun testSearchGroupShowsInRecentlyVisited() {
+       // val searchPage = mockWebServer.url("pages/searchPage.html").toString().toUri()
+        val searchEngine = object {
+            var title = "TestSearchEngine"
+            var url = "http://localhost:${mockWebServer.port}/searchResults.html?search=%s"
+        }
+
+        // Adds our custom search page as default search engine
+        searchSettingsScreen{
+            addCustomSearchEngine(searchEngine.title, searchEngine.url)
+            setCustomEngineAsDefault(searchEngine.title)
+        }
+
+        // Performs a search and opens 2 dummy search results links to create a search group
+//        navigationToolbar {
+//        }.enterURLAndEnterToBrowser(searchPage) {
+//            mDevice.findObject(UiSelector().resourceId("searchBox")).text = "testapp"
+//            mDevice.findObject(UiSelector().resourceId("submit")).click()
+        homeScreen {
+        }.openSearch {
+        }.submitQuery("testapp") {
+            longClickMatchingText("downloads")
+            clickContextOpenLinkInNewTab()
+            longClickMatchingText("permissions")
+            clickContextOpenLinkInNewTab()
+        }.openTabDrawer {
+        }.openTabsListThreeDotMenu {
+        }.closeAllTabs {
+            verifyRecentlyVisitedItemDisplayed("3 sites")
         }
     }
 }

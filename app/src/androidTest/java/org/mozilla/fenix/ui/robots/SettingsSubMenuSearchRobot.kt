@@ -29,6 +29,7 @@ import org.hamcrest.Matchers.allOf
 import org.junit.Assert.assertTrue
 import org.mozilla.fenix.R
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
+import org.mozilla.fenix.helpers.TestHelper
 import org.mozilla.fenix.helpers.TestHelper.packageName
 import org.mozilla.fenix.helpers.click
 
@@ -172,6 +173,25 @@ class SettingsSubMenuSearchRobot {
         )
     }
 
+    fun addCustomSearchEngine(searchEngineTitle: String, searchEngineURL: String) {
+        homeScreen {
+        }.openThreeDotMenu {
+        }.openSettings {
+        }.openSearchSubMenu {
+            openAddSearchEngineMenu()
+            selectAddCustomSearchEngine()
+            typeCustomEngineDetails(searchEngineTitle, searchEngineURL)
+            saveNewSearchEngine()
+        }
+    }
+
+    fun setCustomEngineAsDefault(searchEngineTitle: String) {
+        searchSettingsScreen{
+            changeDefaultSearchEngine(searchEngineTitle)
+            TestHelper.exitMenu()
+        }
+    }
+
     class Transition {
         val mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
@@ -183,6 +203,11 @@ class SettingsSubMenuSearchRobot {
             return SettingsRobot.Transition()
         }
     }
+}
+
+fun searchSettingsScreen(interact: SettingsSubMenuSearchRobot.() -> Unit): SettingsSubMenuSearchRobot.Transition {
+    SettingsSubMenuSearchRobot().interact()
+    return SettingsSubMenuSearchRobot.Transition()
 }
 
 private fun assertSearchToolbar() =

@@ -121,6 +121,17 @@ class HomeScreenRobot {
     fun verifyJumpBackInSectionIsNotDisplayed() = assertJumpBackInSectionIsNotDisplayed()
     fun verifyRecentBookmarksSectionIsDisplayed() = assertRecentBookmarksSectionIsDisplayed()
     fun verifyRecentBookmarksSectionIsNotDisplayed() = assertRecentBookmarksSectionIsNotDisplayed()
+    fun verifyRecentlyVisitedItemDisplayed(text: String) {
+        scrollToElementByText("Recently visited")
+        val recentlyVisitedList =
+            UiScrollable(
+                UiSelector().className("android.widget.HorizontalScrollView")
+            ).setAsHorizontalList()
+        assertTrue(
+            recentlyVisitedList.getChildByText(UiSelector().text(text), text, true)
+                .waitForExists(waitingTime)
+        )
+    }
 
     // Collections elements
     fun verifyCollectionIsDisplayed(title: String, collectionExists: Boolean = true) {
