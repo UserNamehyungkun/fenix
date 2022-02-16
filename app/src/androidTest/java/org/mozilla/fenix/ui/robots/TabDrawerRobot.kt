@@ -29,6 +29,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.By.text
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiScrollable
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import androidx.test.uiautomator.Until.findObject
@@ -347,6 +348,22 @@ class TabDrawerRobot {
                     .resourceId("$packageName:id/mozac_browser_tabstray_title")
                     .textContains(title)
             ).click()
+
+            BrowserRobot().interact()
+            return BrowserRobot.Transition()
+        }
+
+        fun openTabFromGroup(title: String, interact: BrowserRobot.() -> Unit): BrowserRobot.Transition {
+            val tab = UiScrollable(UiSelector().resourceId("$packageName:id/tab_group_list"))
+                .setAsHorizontalList()
+                .getChildByText(
+                    UiSelector()
+                        .resourceId("$packageName:id/mozac_browser_tabstray_title")
+                        .textContains(title),
+                     title,
+                    true
+                )
+            tab.click()
 
             BrowserRobot().interact()
             return BrowserRobot.Transition()

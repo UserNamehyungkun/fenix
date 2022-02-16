@@ -247,8 +247,8 @@ class HistoryTest {
             historyListIdlingResource =
                 RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 2)
             IdlingRegistry.getInstance().register(historyListIdlingResource!!)
-            verifyHistoryItemExists(firstWebPage.url.toString())
-            verifyHistoryItemExists(secondWebPage.url.toString())
+            verifyHistoryItemExists(true, firstWebPage.url.toString())
+            verifyHistoryItemExists(true, secondWebPage.url.toString())
             longTapSelectItem(firstWebPage.url)
             longTapSelectItem(secondWebPage.url)
             openActionBarOverflowOrOptionsMenu(activityTestRule.activity)

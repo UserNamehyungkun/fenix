@@ -19,6 +19,7 @@ import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.allOf
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.mozilla.fenix.R
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
@@ -53,7 +54,7 @@ class HistoryRobot {
         assertVisitedTimeTitle()
     }
 
-    fun verifyHistoryItemExists(url: String) = assertHistoryItemExists(url)
+    fun verifyHistoryItemExists(shouldExist: Boolean, item: String) = assertHistoryItemExists(shouldExist, item)
 
     fun verifyFirstTestPageTitle(title: String) = assertTestPageTitle(title)
 
@@ -124,9 +125,12 @@ private fun assertEmptyHistoryView() =
 private fun assertHistoryListExists() =
     mDevice.findObject(UiSelector().resourceId("R.id.history_list")).waitForExists(waitingTime)
 
-private fun assertHistoryItemExists(url: String) {
-    mDevice.waitForObjects(mDevice.findObject(UiSelector().textContains(url)))
-    assertTrue(mDevice.findObject(UiSelector().textContains(url)).waitForExists(waitingTime))
+private fun assertHistoryItemExists(shouldExist: Boolean, item: String) {
+    if (shouldExist) {
+        assertTrue(mDevice.findObject(UiSelector().textContains(item)).waitForExists(waitingTime))
+    } else {
+        assertFalse(mDevice.findObject(UiSelector().textContains(item)).waitForExists(waitingTime))
+    }
 }
 
 private fun assertVisitedTimeTitle() =
