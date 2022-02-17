@@ -126,7 +126,7 @@ class HomeScreenRobot {
 
     fun verifyRecentlyVisitedSearchGroupDisplayed(shouldBeDisplayed: Boolean, searchTerm: String, groupSize: Int) {
         // checks if the search group exists in the Recently visited section
-
+        recentlyVisitedList.waitForExists(waitingTime)
         scrollToElementByText("Recently visited")
 
         if (shouldBeDisplayed) {

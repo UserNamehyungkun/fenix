@@ -106,7 +106,7 @@ class SearchTest {
             verifySearchBarEmpty()
             clickSearchEngineButton(activityTestRule, "DuckDuckGo")
             typeSearch("mozilla")
-            verifySearchEngineResults(activityTestRule, "DuckDuckGo", 4)
+            verifySearchEngineResults(3)
             clickSearchEngineResult(activityTestRule, "DuckDuckGo")
             verifySearchEngineURL("DuckDuckGo")
         }
@@ -140,7 +140,7 @@ class SearchTest {
 
     @SmokeTest
     @Test
-    fun testSearchGroupInRecentlyVisited() {
+    fun searchGroupShowsInRecentlyVisitedTest() {
         val firstPage = searchMockServer.url("generic1.html").toString()
         val secondPage = searchMockServer.url("generic2.html").toString()
         val searchString = "http://localhost:${searchMockServer.port}/searchResults.html?search={searchTerms}"
