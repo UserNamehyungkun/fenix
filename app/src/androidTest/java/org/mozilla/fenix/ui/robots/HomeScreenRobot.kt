@@ -48,6 +48,7 @@ import org.mozilla.fenix.helpers.TestAssetHelper.waitingTime
 import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeShort
 import org.mozilla.fenix.helpers.TestHelper.appContext
 import org.mozilla.fenix.helpers.TestHelper.appName
+import org.mozilla.fenix.helpers.TestHelper.hasCousin
 import org.mozilla.fenix.helpers.TestHelper.packageName
 import org.mozilla.fenix.helpers.TestHelper.scrollToElementByText
 import org.mozilla.fenix.helpers.click
@@ -126,7 +127,7 @@ class HomeScreenRobot {
 
     fun verifyRecentlyVisitedSearchGroupDisplayed(shouldBeDisplayed: Boolean, searchTerm: String, groupSize: Int) {
         // checks if the search group exists in the Recently visited section
-        recentlyVisitedList.waitForExists(waitingTime)
+        mDevice.findObject(UiSelector().text("Recently visited")).waitForExists(waitingTime)
         scrollToElementByText("Recently visited")
 
         if (shouldBeDisplayed) {
@@ -383,6 +384,15 @@ class HomeScreenRobot {
 
             CollectionRobot().interact()
             return CollectionRobot.Transition()
+        }
+
+        fun openRecentlyVisitedSearchGroupHistoryList(title: String, interact: HistoryRobot.() -> Unit): HistoryRobot.Transition {
+            recentlyVisitedList.getChildByText(UiSelector().text(title), title, true)
+                .waitForExists(waitingTimeShort)
+            mDevice.findObject(UiSelector().text(title)).click()
+
+            HistoryRobot().interact()
+            return HistoryRobot.Transition()
         }
     }
 }
@@ -692,5 +702,6 @@ val deleteFromHistory =
 
 private val recentlyVisitedList =
     UiScrollable(
-        UiSelector().className("android.widget.HorizontalScrollView")
+        UiSelector()
+            .className("android.widget.HorizontalScrollView")
     ).setAsHorizontalList()

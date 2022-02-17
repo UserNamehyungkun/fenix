@@ -44,6 +44,7 @@ gcloud:
     - class org.mozilla.fenix.ui.SearchTest#searchGroupShowsInRecentlyVisitedTest
     - class org.mozilla.fenix.ui.SearchTest#noCurrentSearchGroupFromPrivateBrowsingTest
     - class org.mozilla.fenix.ui.SearchTest#noRecentlyVisitedSearchGroupInPrivateBrowsingTest
+    - class org.mozilla.fenix.ui.SearchTest#deleteItemsFromSearchGroupsHistoryTest
     - class org.mozilla.fenix.ui.SettingsSearchTest#editCustomSearchEngineTest
 
   device:

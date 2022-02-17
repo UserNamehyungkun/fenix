@@ -9,6 +9,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers
+import androidx.test.espresso.matcher.ViewMatchers.hasSibling
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -66,8 +67,8 @@ class HistoryRobot {
 
     fun verifyHomeScreen() = HomeScreenRobot().verifyHomeScreen()
 
-    fun clickDeleteHistoryButton() {
-        deleteButton().click()
+    fun clickDeleteHistoryButton(item: String) {
+        deleteButton(item).click()
     }
 
     fun clickDeleteAllHistoryButton() = deleteAllButton().click()
@@ -100,7 +101,8 @@ private fun testPageTitle() = onView(allOf(withId(R.id.title), withText("Test_Pa
 
 private fun pageUrl() = onView(withId(R.id.url))
 
-private fun deleteButton() = onView(withId(R.id.overflow_menu))
+private fun deleteButton(title: String) =
+    onView(allOf(withId(R.id.overflow_menu), hasSibling(withText(title))))
 
 private fun deleteAllButton() = onView(withId(R.id.history_delete_all))
 

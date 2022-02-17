@@ -5,9 +5,11 @@
 package org.mozilla.fenix.ui
 
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+import androidx.core.net.toUri
+import androidx.test.espresso.Espresso
+import androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu
 import mozilla.components.browser.icons.IconRequest
 import mozilla.components.browser.icons.generator.DefaultIconGenerator
-import mozilla.components.browser.state.search.SearchEngine
 import mozilla.components.feature.search.ext.createSearchEngine
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
@@ -16,14 +18,15 @@ import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
-import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.helpers.FeatureSettingsHelper
 import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.SearchDispatcher
 import org.mozilla.fenix.helpers.TestHelper.appContext
+import org.mozilla.fenix.helpers.TestHelper.exitMenu
+import org.mozilla.fenix.helpers.TestHelper.longTapSelectItem
 import org.mozilla.fenix.helpers.TestHelper.setCustomSearchEngine
 import org.mozilla.fenix.ui.robots.homeScreen
-import org.mozilla.fenix.ui.robots.searchSettingsScreen
+import org.mozilla.fenix.ui.robots.multipleSelectionToolbar
 
 /**
  *  Tests for verifying the search fragment
@@ -44,15 +47,6 @@ class SearchTest {
 
     private val featureSettingsHelper = FeatureSettingsHelper()
     lateinit var searchMockServer: MockWebServer
-//    private fun searchMockServer() = MockWebServer().apply {
-//        dispatcher = SearchDispatcher()
-//    }
-
-//    private val customSearchEngine = createSearchEngine(
-//        name = "TestSearchEngine",
-//        url = "http://localhost:${searchMockServer.port}/searchResults.html?search={searchTerms}",
-//        icon = DefaultIconGenerator().generate(appContext, IconRequest("http://localhost:${searchMockServer.port}/searchResults.html?search={searchTerms}")).bitmap
-//    )
 
     @Before
     fun setUp() {
@@ -143,6 +137,7 @@ class SearchTest {
     fun searchGroupShowsInRecentlyVisitedTest() {
         val firstPage = searchMockServer.url("generic1.html").toString()
         val secondPage = searchMockServer.url("generic2.html").toString()
+        // setting our custom mockWebServer search URL
         val searchString = "http://localhost:${searchMockServer.port}/searchResults.html?search={searchTerms}"
         val customSearchEngine = createSearchEngine(
             name = "TestSearchEngine",
@@ -154,15 +149,15 @@ class SearchTest {
         // Performs a search and opens 2 dummy search results links to create a search group
         homeScreen {
         }.openSearch {
-        }.submitQuery("test") {
+        }.submitQuery("test search") {
             longClickMatchingText("Link 1")
             clickContextOpenLinkInNewTab()
             longClickMatchingText("Link 2")
             clickContextOpenLinkInNewTab()
         }.goToHomescreen {
             verifyJumpBackInSectionIsDisplayed()
-            verifyCurrentSearchGroupIsDisplayed(true,"test",3)
-            verifyRecentlyVisitedSearchGroupDisplayed(false, "test", 3)
+            verifyCurrentSearchGroupIsDisplayed(true,"test search",3)
+            verifyRecentlyVisitedSearchGroupDisplayed(false, "test search", 3)
         }.openTabDrawer {
         }.openTabFromGroup(firstPage) {
         }.openTabDrawer {
@@ -170,13 +165,14 @@ class SearchTest {
         }.openTabDrawer {
         }.openTabsListThreeDotMenu {
         }.closeAllTabs {
-            verifyRecentlyVisitedSearchGroupDisplayed(true,"test", 3)
+            verifyRecentlyVisitedSearchGroupDisplayed(true,"test search", 3)
         }
     }
 
     @SmokeTest
     @Test
     fun noCurrentSearchGroupFromPrivateBrowsingTest() {
+        // setting our custom mockWebServer search URL
         val searchString = "http://localhost:${searchMockServer.port}/searchResults.html?search={searchTerms}"
         val customSearchEngine = createSearchEngine(
             name = "TestSearchEngine",
@@ -188,13 +184,13 @@ class SearchTest {
         // Performs a search and opens 2 dummy search results links to create a search group
         homeScreen {
         }.openSearch {
-        }.submitQuery("test") {
+        }.submitQuery("test search") {
             longClickMatchingText("Link 1")
             clickContextOpenLinkInPrivateTab()
             longClickMatchingText("Link 2")
             clickContextOpenLinkInPrivateTab()
         }.goToHomescreen {
-            verifyCurrentSearchGroupIsDisplayed(false, "test", 3)
+            verifyCurrentSearchGroupIsDisplayed(false, "test search", 3)
         }.openThreeDotMenu {
         }.openHistory {
             verifyHistoryItemExists(false, "3 sites")
@@ -206,6 +202,7 @@ class SearchTest {
     fun noRecentlyVisitedSearchGroupInPrivateBrowsingTest() {
         val firstPage = searchMockServer.url("generic1.html").toString()
         val secondPage = searchMockServer.url("generic2.html").toString()
+        // setting our custom mockWebServer search URL
         val searchString = "http://localhost:${searchMockServer.port}/searchResults.html?search={searchTerms}"
         val customSearchEngine = createSearchEngine(
             name = "TestSearchEngine",
@@ -219,7 +216,7 @@ class SearchTest {
         }.togglePrivateBrowsingMode()
         homeScreen {
         }.openSearch {
-        }.submitQuery("test") {
+        }.submitQuery("test search") {
             longClickMatchingText("Link 1")
             clickContextOpenLinkInPrivateTab()
             longClickMatchingText("Link 2")
@@ -233,7 +230,52 @@ class SearchTest {
         }.closeAllTabs {
             homeScreen {
             }.togglePrivateBrowsingMode()
-            verifyRecentlyVisitedSearchGroupDisplayed(false, "test", 3)
+            verifyRecentlyVisitedSearchGroupDisplayed(false, "test search", 3)
+        }
+    }
+
+    @SmokeTest
+    @Test
+    fun deleteItemsFromSearchGroupsHistoryTest() {
+        val firstPage = searchMockServer.url("generic1.html").toString()
+        val secondPage = searchMockServer.url("generic2.html").toString()
+        // setting our custom mockWebServer search URL
+        val searchString = "http://localhost:${searchMockServer.port}/searchResults.html?search={searchTerms}"
+        val customSearchEngine = createSearchEngine(
+            name = "TestSearchEngine",
+            url = searchString,
+            icon = DefaultIconGenerator().generate(appContext, IconRequest(searchString)).bitmap
+        )
+        setCustomSearchEngine(customSearchEngine)
+
+        // Performs a search and opens 2 dummy search results links to create a search group
+        homeScreen {
+        }.openSearch {
+        }.submitQuery("test search") {
+            longClickMatchingText("Link 1")
+            clickContextOpenLinkInNewTab()
+            longClickMatchingText("Link 2")
+            clickContextOpenLinkInNewTab()
+        }.openTabDrawer {
+        }.openTabFromGroup(firstPage) {
+        }.openTabDrawer {
+        }.openTabFromGroup(secondPage) {
+        }.openTabDrawer {
+        }.openTabsListThreeDotMenu {
+        }.closeAllTabs {
+            verifyRecentlyVisitedSearchGroupDisplayed(true, "test search", 3)
+        }.openRecentlyVisitedSearchGroupHistoryList("test search") {
+            clickDeleteHistoryButton(firstPage)
+            longTapSelectItem(secondPage.toUri())
+            multipleSelectionToolbar {
+                openActionBarOverflowOrOptionsMenu(activityTestRule.activity)
+                clickMultiSelectionDelete()
+            }
+            exitMenu()
+        }
+        homeScreen {
+            // checking that the group is removed when only 1 item is left
+            verifyRecentlyVisitedSearchGroupDisplayed(false, "test search", 1)
         }
     }
 }

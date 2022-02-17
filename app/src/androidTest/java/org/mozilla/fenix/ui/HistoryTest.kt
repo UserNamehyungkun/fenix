@@ -121,7 +121,7 @@ class HistoryTest {
             historyListIdlingResource =
                 RecyclerViewIdlingResource(activityTestRule.activity.findViewById(R.id.history_list), 1)
             IdlingRegistry.getInstance().register(historyListIdlingResource!!)
-            clickDeleteHistoryButton()
+            clickDeleteHistoryButton(firstWebPage.url.toString())
             IdlingRegistry.getInstance().unregister(historyListIdlingResource!!)
             verifyDeleteSnackbarText("Deleted")
             verifyEmptyHistoryView()
